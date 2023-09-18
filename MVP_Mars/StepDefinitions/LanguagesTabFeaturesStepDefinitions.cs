@@ -18,8 +18,8 @@ namespace MVP_Mars.StepDefinitions
             throw new PendingStepException();
         }
 
-        [Then(@"the new record should be created successfully and appear in the profile")]
-        public void ThenTheNewRecordShouldBeCreatedSuccessfullyAndAppearInTheProfile()
+        [Then(@"the new record should be created successfully")]
+        public void ThenTheNewRecordShouldBeCreatedSuccessfully()
         {
             throw new PendingStepException();
         }

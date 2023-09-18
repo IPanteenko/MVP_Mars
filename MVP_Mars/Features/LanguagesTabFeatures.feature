@@ -7,7 +7,7 @@ So that the people seeking for languages can look at what details I hold.
 Scenario: add new language using valid data
 	Given I signed in to the portal successfully
 	When I add a new language record
-	Then the new record should be created successfully and appear in the profile
+	Then the new record should be created successfully 
 
 Scenario: add new language using the name of already existing record
 	Given I signed in to the portal successfully
