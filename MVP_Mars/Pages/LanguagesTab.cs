@@ -48,13 +48,15 @@ namespace MVP_Mars.Pages
 
             if (languageName != null)
             {
-                IWebElement addLanguageTextBox = driver.FindElement(By.XPath("//body/div[@id='account-profile-section']/div[1]/section[2]/div[1]/div[1]/div[1]/div[3]/form[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[1]/input[1]"));
+                //Wait.waitIsVisible(driver, "XPath", "//*[@id='account-profile-section']/div[1]/section[2]/div[1]/div[1]/div[1]/div[3]/form[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[1]/input[1]", 10);
+                IWebElement addLanguageTextBox = driver.FindElement(By.XPath("//*[@id='account-profile-section']/div[1]/section[2]/div[1]/div[1]/div[1]/div[3]/form[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[1]/input[1]"));
                 addLanguageTextBox.SendKeys(languageName);
             }
 
             if (languageLevel != null)
             {
-                SelectElement languageLevelDropdown = new SelectElement(driver.FindElement(By.XPath("//body/div[@id='account-profile-section']/div[1]/section[2]/div[1]/div[1]/div[1]/div[3]/form[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/select[1]")));
+                //Wait.waitIsVisible(driver, "XPath", "//*[@id='account-profile-section']/div[1]/section[2]/div[1]/div[1]/div[1]/div[3]/form[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/select[1]", 10);
+                SelectElement languageLevelDropdown = new SelectElement(driver.FindElement(By.XPath("//*[@id='account-profile-section']/div[1]/section[2]/div[1]/div[1]/div[1]/div[3]/form[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/select[1]")));
                 languageLevelDropdown.SelectByValue(languageLevel);
             }
 

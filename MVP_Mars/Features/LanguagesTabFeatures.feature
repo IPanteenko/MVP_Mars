@@ -9,8 +9,8 @@ Scenario: add new language using valid data
 	When I add a new language record
 	Then the new record should be created successfully 
 
-    @RequiresCreatingLanguage
 Scenario: add new language using the name of already existing record
+    Given I have a language record created
 	When I add a second record with the same name
 	Then Duplicated data error message should display
 
@@ -27,18 +27,18 @@ Scenario: add four languages
 	When I add fourth language with valid data
 	Then Add New button should disappear 
 
-    @RequiresCreatingLanguage
 Scenario: delete an existing language record
+    Given I have a language record created
     When I delete the record 
     Then the record should be deleted successfully 
 
-    @RequiresCreatingLanguage
 Scenario: edit name of an existing language 
+   Given I have a language record created
     When I edit name of the record 
     Then the record's name should be updated successfully
 
-    @RequiresCreatingLanguage
 Scenario: edit language level of an existing language record
+    Given I have a language record created
     When  I change language level of existing record 
     Then the record's level should be updated successfully
 
@@ -47,8 +47,9 @@ Scenario: cancel the addition of new language record
     When I click on Cancel addition button
     Then the addition of the language record should be cancelled
 
-    @RequiresCreatingLanguage
+
 Scenario: cancel the edit of existing language record
+    Given I have a language record created
     And clicked on Edit language button
     When I click on Cancel edit button
     Then the edit of the language record should be cancelled

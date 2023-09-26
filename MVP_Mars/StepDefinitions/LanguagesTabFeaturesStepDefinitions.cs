@@ -10,6 +10,7 @@ using TechTalk.SpecFlow;
 namespace MVP_Mars.StepDefinitions
 {
     [Binding]
+    [Scope(Feature="LanguagesTabFeatures")]
     public class LanguagesTabFeaturesStepDefinitions : Driver
     {
         readonly SignIn signInObj = new();
@@ -24,8 +25,8 @@ namespace MVP_Mars.StepDefinitions
             languagesTabObj.RemoveExistingLanguages(driver);
         }
 
-        [BeforeScenario("RequiresCreatingLanguage")]
-        public void CreateNewLanguageSetUp()
+        [Given(@"I have a language record created")]
+        public void GivenIHaveALanguageRecordCreated()
         {
             languagesTabObj.CreateNewLanguage(driver, "Russian", "Conversational");
         }
@@ -68,7 +69,7 @@ namespace MVP_Mars.StepDefinitions
         [When(@"I add a new language without choosing experience level")]
         public void WhenIAddANewLanguageWithoutChoosingExperienceLevel()
         {
-            languagesTabObj.CreateNewLanguage(driver, "English", "");
+            languagesTabObj.CreateNewLanguage(driver, "English", null);
         }
 
         [Then(@"Enter language level message should display")]
@@ -81,7 +82,7 @@ namespace MVP_Mars.StepDefinitions
         [When(@"I add a new language without entering name")]
         public void WhenIAddANewLanguageWithoutEnteringName()
         {
-            languagesTabObj.CreateNewLanguage(driver, "", "Fluent");
+            languagesTabObj.CreateNewLanguage(driver, null, "Fluent");
         }
 
         [Then(@"Enter Language message should display")]
@@ -143,7 +144,7 @@ namespace MVP_Mars.StepDefinitions
         [When(@"I change language level of existing record")]
         public void WhenIChangeLanguageLevelOfExistingRecord()
         {
-            languagesTabObj.EditLanguage(driver, "", "Fluent");
+            languagesTabObj.EditLanguage(driver, null, "Fluent");
         }
 
         [Then(@"the record's level should be updated successfully")]
