@@ -27,5 +27,12 @@ namespace MVP_Mars.Pages
             IWebElement loginButton = driver.FindElement(By.XPath("//button[contains(text(),'Login')]"));
             loginButton.Click();
         }
+
+        public void NavigateToSkillTab(IWebDriver driver) 
+        {
+            Utilities.Wait.waitIsVisible(driver, "XPath", "/html/body/div[1]/div/section[2]/div/div/div/div[3]/form/div[1]", 10);
+            IWebElement sKillTabButton = driver.FindElement(By.XPath("/html/body/div[1]/div/section[2]/div/div/div/div[3]/form/div[1]/a[2]"));
+            sKillTabButton.Click();
+        }
     }
 }
