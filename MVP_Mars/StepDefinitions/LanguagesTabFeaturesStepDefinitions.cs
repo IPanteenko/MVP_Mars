@@ -1,10 +1,7 @@
 using MVP_Mars.Pages;
 using MVP_Mars.Utilities;
 using NUnit.Framework;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
-using System;
 using TechTalk.SpecFlow;
 
 namespace MVP_Mars.StepDefinitions
@@ -13,211 +10,230 @@ namespace MVP_Mars.StepDefinitions
     [Scope(Feature="LanguagesTabFeatures")]
     public class LanguagesTabFeaturesStepDefinitions : Driver
     {
-        readonly SignIn signInObj = new();
-        readonly LanguagesTab languagesTabObj = new();
-        readonly MessagePopUp messagePopUpObj = new();
+        readonly SignInPageObj signInObj;
+        readonly LanguagesTabPageObj languagesTabObj;
+        readonly MessagePopUpPageObj messagePopUpObj;
 
+        public LanguagesTabFeaturesStepDefinitions (): base()
+        {
+            this.signInObj = new SignInPageObj(driver);
+            this.languagesTabObj = new LanguagesTabPageObj(driver);
+            this.messagePopUpObj = new MessagePopUpPageObj(driver);
+        }
 
-        [BeforeScenario]
+        [BeforeScenario(Order = 10)]
         public void GivenISignedInToThePortalSuccessfully()
         {
-            signInObj.SignInActions(driver);
-            languagesTabObj.RemoveExistingLanguages(driver);
+            languagesTabObj.RemoveExistingLanguages();
         }
 
-        [Given(@"I have a language record created")]
-        public void GivenIHaveALanguageRecordCreated()
+
+        [When(@"I add a new language record including '([^']*)', '([^']*)'")]
+        public void WhenIAddANewLanguageRecordIncluding(string languageName, string languageLevel)
         {
-            languagesTabObj.CreateNewLanguage(driver, "Russian", "Conversational");
+            languagesTabObj.CreateNewLanguage(languageName, languageLevel);
         }
 
-        [AfterScenario]
-        public void AfterScenario()
+        [Then(@"the new record should be created successfully with '([^']*)', '([^']*)' data")]
+        public void ThenTheNewRecordShouldBeCreatedSuccessfullyWithData(string languageName, string LanguageLevel)
         {
-            driver.Quit();
+            languagesTabObj.WaitForRecordToBeVisible();
+            Assert.That(languagesTabObj.NewLanguageName.Text == languageName, "Actual name and new name don't match");
+            Assert.That(languagesTabObj.NewLanguageLevel.Text == LanguageLevel, "Actual level and new level don't match");
         }
 
-        [When(@"I add a new language record")]
-        public void WhenIAddANewLanguageRecord()
+        [Given(@"I have a language record created '([^']*)', '([^']*)'")]
+        public void GivenIHaveALanguageRecordCreated(string language, string level)
         {
-            languagesTabObj.CreateNewLanguage(driver, "English", "Fluent");
+            languagesTabObj.CreateNewLanguage(language, level);
         }
 
-        [Then(@"the new record should be created successfully")]
-        public void ThenTheNewRecordShouldBeCreatedSuccessfully()
+        [When(@"I add a second record with the same name '([^']*)', '([^']*)'")]
+        public void WhenIAddASecondRecordWithTheSameName(string language, string level)
         {
-            string newLanguageName = languagesTabObj.GetNewLanguageName(driver);
-            Assert.That(newLanguageName == "English", "Actual name and new name don't match");
-
-            string newLanguageLevel = languagesTabObj.GetNewLanguageLevel(driver);
-            Assert.That(newLanguageLevel == "Fluent", "Actual level and new level don't match");
+            languagesTabObj.CreateNewLanguage(language, level);
         }
 
-        [When(@"I add a second record with the same name")]
-        public void WhenIAddASecondRecordWithTheSameName()
-        {
-            languagesTabObj.CreateNewLanguage(driver, "Russian", "Fluent");
-        }
 
         [Then(@"Duplicated data error message should display")]
         public void ThenDuplicatedDataErrorMessageShouldDisplay()
         {
-            var errorMessage = messagePopUpObj.FindErrorMessagePopUp(driver, "Duplicated data");
+            var errorMessage = messagePopUpObj.FindErrorMessagePopUp("Duplicated data");
             Assert.True(errorMessage.Displayed, "Error Message doesn't pop up");
         }
 
-        [When(@"I add a new language without choosing experience level")]
-        public void WhenIAddANewLanguageWithoutChoosingExperienceLevel()
+        [When(@"I add ""([^""]*)"" language without choosing experience level")]
+        public void WhenIAddLanguageWithoutChoosingExperienceLevel(string language)
         {
-            languagesTabObj.CreateNewLanguage(driver, "English", null);
+            languagesTabObj.CreateNewLanguage(language, null);
         }
 
         [Then(@"Enter language level message should display")]
         public void ThenEnterLanguageLevelMessageShouldDisplay()
         {
-            var errorMessage = messagePopUpObj.FindErrorMessagePopUp(driver, "Please enter language and level");
+            var errorMessage = messagePopUpObj.FindErrorMessagePopUp("Please enter language and level");
             Assert.That(errorMessage.Displayed, "Error Message doesn't pop up");
         }
 
-        [When(@"I add a new language without entering name")]
-        public void WhenIAddANewLanguageWithoutEnteringName()
+        [When(@"I add a new language with ""([^""]*)"" level and without name")]
+        public void WhenIAddANewLanguageWithLevelAndWithoutName(string level)
         {
-            languagesTabObj.CreateNewLanguage(driver, null, "Fluent");
+            languagesTabObj.CreateNewLanguage(null, level);
         }
 
         [Then(@"Enter Language message should display")]
         public void ThenEnterLanguageMessageShouldDisplay()
         {
-            var errorMessage = messagePopUpObj.FindErrorMessagePopUp(driver, "Please enter language and level");
+            var errorMessage = messagePopUpObj.FindErrorMessagePopUp("Please enter language and level");
             Assert.That(errorMessage.Displayed, "Error Message doesn't pop up");
         }
 
-        [Given(@"I created three language records with valid data")]
-        public void GivenICreatedThreeLanguageRecordsWithValidData()
+
+        [Given(@"I created ""([^""]*)"" language with ""([^""]*)"" level")]
+        public void GivenICreatedLanguageWithLevel(string language, string level)
         {
-            languagesTabObj.CreateNewLanguage(driver, "English", "Basic");
-            languagesTabObj.CreateNewLanguage(driver, "Russian", "Conversational");
-            languagesTabObj.CreateNewLanguage(driver, "Chinese", "Fluent");
+            languagesTabObj.CreateNewLanguage(language, level);
         }
 
-        [When(@"I add fourth language with valid data")]
-        public void WhenIAddFourthLanguageWithValidData()
+        [Given(@"I created second ""([^""]*)"" language with ""([^""]*)"" level")]
+        public void GivenICreatedSecondLanguageWithLevel(string language, string level)
         {
-            languagesTabObj.GetAddNewButton(driver);
-            languagesTabObj.CreateNewLanguage(driver, "Mandarin", "Native/Bilingual");
+            languagesTabObj.CreateNewLanguage(language, level);
+        }
+
+        [Given(@"I created third ""([^""]*)"" language with ""([^""]*)"" level")]
+        public void GivenICreatedThirdLanguageWithLevel(string language, string level)
+        {
+            languagesTabObj.CreateNewLanguage(language, level);
+        }
+
+        [When(@"I add ""([^""]*)"" language with ""([^""]*)"" level")]
+        public void WhenIAddLanguageWithLevel(string language, string level)
+        {
+            languagesTabObj.CreateNewLanguage(language, level);
         }
 
         [Then(@"Add New button should disappear")]
         public void ThenAddNewButtonShouldDisappear()
         {
-            Wait.waitIsVisible(driver, "XPath", "/html/body/div[1]/div/section[2]/div/div/div/div[3]/form/div[2]/div/div[2]/div/table/tbody[4]/tr", 10);
+            languagesTabObj.WaitForAddButtonIsStale();
             Assert.That(ExpectedConditions.StalenessOf(languagesTabObj.AddNewButton)(driver), "Add new button is present");
         }
 
+        [Given(@"I have a language record created")]
+        public void GivenIHaveALanguageRecordCreated()
+        {
+            languagesTabObj.CreateNewLanguage("Russian", "Conversational");
+        }
 
         [When(@"I delete the record")]
         public void WhenIDeleteTheRecord()
         {
-            languagesTabObj.DeleteLanguage(driver);
+            languagesTabObj.DeleteLanguage();
         }
 
         [Then(@"the record should be deleted successfully")]
         public void ThenTheRecordShouldBeDeletedSuccessfully()
         {
-            Assert.That(ExpectedConditions.StalenessOf(languagesTabObj.LanguageRecord)(driver), "Record is present");
+            Assert.That(languagesTabObj.LanguageRecord==null, "Record is present");
         }
 
-
-        [When(@"I edit name of the record")]
-        public void WhenIEditNameOfTheRecord()
+        [Given(@"I have a language record created using '([^']*)', '([^']*)'")]
+        public void GivenIHaveALanguageRecordCreatedUsing(string language, string level)
         {
-            languagesTabObj.EditLanguage(driver, "Italian", "Conversational");
+            languagesTabObj.CreateNewLanguage(language, level);
         }
 
-        [Then(@"the record's name should be updated successfully")]
-        public void ThenTheRecordsNameShouldBeUpdatedSuccessfully()
+        [When(@"I edit name of the record with '([^']*)'")]
+        public void WhenIEditNameOfTheRecordWith(string newName)
         {
-            string editedLanguageName = languagesTabObj.GetNewLanguageName(driver);
-            Assert.That(editedLanguageName == "Italian", "Actual name and edited name don't match");
+            languagesTabObj.EditLanguage(newName, null);
         }
 
-        [When(@"I change language level of existing record")]
-        public void WhenIChangeLanguageLevelOfExistingRecord()
+        [Then(@"the record's name should change to '([^']*)'")]
+        public void ThenTheRecordRussian(string newName)
         {
-            languagesTabObj.EditLanguage(driver, null, "Fluent");
+            languagesTabObj.WaitForRecordToBeVisible();
+            Assert.That(languagesTabObj.NewLanguageName.Text == newName, "Actual name and edited name don't match");
         }
 
-        [Then(@"the record's level should be updated successfully")]
-        public void ThenTheRecordsLevelShouldBeUpdatedSuccessfully()
+        [Given(@"I have a language record created with '([^']*)', '([^']*)'")]
+        public void GivenIHaveALanguageRecordCreatedWith(string language, string level)
         {
-            string newLanguageLevel = languagesTabObj.GetNewLanguageLevel(driver);
-            Assert.That(newLanguageLevel == "Fluent", "Actual level and new level don't match");
+            languagesTabObj.CreateNewLanguage(language, level);
+        }
+
+        [When(@"I change language level of existing record  with '([^']*)'")]
+        public void WhenIChangeLanguageLevelOfExistingRecordWith(string newLevel)
+        {
+            languagesTabObj.EditLanguage(null, newLevel);
+        }
+
+        [Then(@"the record's level should change to '([^']*)'")]
+        public void ThenTheRecordConversational(string newLevel)
+        {
+            languagesTabObj.WaitForRecordToBeVisible();
+            Assert.That(languagesTabObj.NewLanguageLevel.Text== newLevel, "Actual level and new level don't match");
         }
 
         [Given(@"clicked on Add New button")]
         public void GivenClickedOnAddNewButton()
         {
-            languagesTabObj.ClickAddNewLanguageButton(driver);
+            languagesTabObj.ClickAddNewLanguageButton();
         }
 
         [When(@"I click on Cancel addition button")]
         public void WhenIClickOnCancelAdditionButton()
         {
-            languagesTabObj.GetAddLanguageSection(driver);
-            languagesTabObj.ClickCancelAdditionButton(driver);
+            languagesTabObj.ClickCancelAdditionButton();
         }
 
         [Then(@"the addition of the language record should be cancelled")]
         public void ThenTheAdditionOfTheLanguageRecordShouldBeCancelled()
         {
-            Assert.That(ExpectedConditions.StalenessOf(languagesTabObj.AddLanguageSection)(driver), "Add new button is present");
+            Assert.That(languagesTabObj.LanguageSection==null, "Addition wasn't cancelled");
         }
 
         [Given(@"clicked on Edit language button")]
         public void GivenClickedOnEditLanguageButton()
         {
-            languagesTabObj.ClickEditLanguageButton(driver);
+            languagesTabObj.ClickEditLanguageButton();
         }
 
         [When(@"I click on Cancel edit button")]
         public void WhenIClickOnCancelEditButton()
         {
-            languagesTabObj.FindUpdateButton(driver);
-            languagesTabObj.ClickCancelEditButton(driver);
+            languagesTabObj.ClickCancelEditButton();
         }
 
         [Then(@"the edit of the language record should be cancelled")]
         public void ThenTheEditOfTheLanguageRecordShouldBeCancelled()
         {
-            Assert.That(ExpectedConditions.StalenessOf(languagesTabObj.UpdateButton)(driver), "Add new button is present");
+            Assert.That(languagesTabObj.UpdateButton==null, "Add new button is present");
         }
 
         [When(@"I try to delete non-existent record")]
         public void WhenITryToDeleteNon_ExistentRecord()
         {
-            languagesTabObj.FindDeleteButtonCount(driver);
+            languagesTabObj.FindVisibleDeleteButton();
         }
 
         [Then(@"no delete button is presented")]
         public void ThenNoDeleteButtonIsPresented()
         {
-            var deleteButtonCount = languagesTabObj.FindDeleteButtonCount(driver);
-            Assert.That(deleteButtonCount == 0, "Delete Button is present");
+            Assert.That(languagesTabObj.PresentDeleteButton == null, "Delete Button is present");
         }
 
         [When(@"I try to edit non-existent record")]
         public void WhenITryToEditNon_ExistentRecord()
         {
-            languagesTabObj.FindEditButtonCount(driver);
+            languagesTabObj.FindVisibleEditButton();
         }
 
         [Then(@"no edit button is presented")]
         public void ThenNoEditButtonIsPresented()
         {
-            var editButtonCount = languagesTabObj.FindEditButtonCount(driver);
-            Assert.That(editButtonCount == 0, "Edit Button Is present");
+            Assert.That(languagesTabObj.PresentEditButton == null, "Edit Button Is present");
         }
-
-
     }
 }

@@ -1,9 +1,6 @@
 using MVP_Mars.Pages;
 using MVP_Mars.Utilities;
 using NUnit.Framework;
-using OpenQA.Selenium.Chrome;
-using SeleniumExtras.WaitHelpers;
-using System;
 using TechTalk.SpecFlow;
 
 namespace MVP_Mars.StepDefinitions
@@ -12,187 +9,202 @@ namespace MVP_Mars.StepDefinitions
     [Scope(Feature="SkillsTabFeatures")]
     public class SkillsTabFeaturesStepDefinitions: Driver
     {
-        readonly SignIn signInObj = new();
-        readonly SkillsTab skillsTabObj = new();
-        readonly MessagePopUp messagePopUpObj = new();
+        readonly SignInPageObj signInObj;
+        readonly SkillsTabPageObj skillsTabObj;
+        readonly MessagePopUpPageObj messagePopUpObj;
 
-        [BeforeScenario]
+        public SkillsTabFeaturesStepDefinitions(): base() 
+        { 
+            this.signInObj = new SignInPageObj(driver);
+            this.skillsTabObj = new SkillsTabPageObj(driver);
+            this.messagePopUpObj = new MessagePopUpPageObj(driver);
+        }
+
+        [BeforeScenario(Order =10)]
         public void GivenISignedInToThePortalSuccessfully()
         {
-            signInObj.SignInActions(driver);
-            signInObj.NavigateToSkillTab(driver);
-            skillsTabObj.RemoveExistingSkills(driver);
+            skillsTabObj.NavigateToSkillTab();
+            skillsTabObj.RemoveExistingSkills();
         }
 
-        [AfterScenario]
-        public void CloseBrowser()
-        {
-            driver.Quit();
-        }
 
         [Given(@"I have a skill record created")]
         public void GivenIHaveASkillRecordCreated()
         {
-            skillsTabObj.CreateNewSkill(driver, "Cross Stitch", "Beginner");
-        }
-
-        [When(@"I add a new skill record")]
-        public void WhenIAddANewSkillRecord()
-        {
-            skillsTabObj.CreateNewSkill(driver, "Cross Stitch", "Beginner");
-        }
-
-        [Then(@"the new skill record should be created successfully")]
-        public void ThenTheNewSkillRecordShouldBeCreatedSuccessfully()
-        {
-            string newSkillName = skillsTabObj.GetNewSkillName(driver);
-            Assert.That(newSkillName == "Cross Stitch", "Actual name and created name don't match");
-            
-            string newSkillLevel = skillsTabObj.GetNewSkillLevel(driver);
-            Assert.That(newSkillLevel == "Beginner", "Actual level and created level don't match");
+            skillsTabObj.CreateNewSkill("Cross Stitch", "Beginner");
         }
 
 
-        [When(@"I add a second skill record with the same name")]
-        public void WhenIAddASecondSkillRecordWithTheSameName()
+        [When(@"I add a new skill record with '([^']*)', '([^']*)'")]
+        public void WhenIAddANewSkillRecordWith(string name, string level)
         {
-            skillsTabObj.CreateNewSkill(driver, "Cross Stitch", "Beginner");
+            skillsTabObj.CreateNewSkill(name, level);
+        }
+
+        [Then(@"the new skill record with '([^']*)', '([^']*)' should be created")]
+        public void ThenTheNewSkillRecordWithShouldBeCreated(string name, string level)
+        {
+            skillsTabObj.WaitForSkillNameToBeVisible();
+            Assert.That(skillsTabObj.NewSkillName.Text == name, "Actual name and created name don't match");
+            Assert.That(skillsTabObj.NewSkillLevel.Text == level, "Actual level and created level don't match");
+        }
+
+
+        [Given(@"I have a skill record created with '([^']*)', '([^']*)'")]
+        public void GivenIHaveASkillRecordCreatedWith(string name, string level)
+        {
+            skillsTabObj.CreateNewSkill(name, level);
+        }
+
+        [When(@"I add a second skill record with the same name '([^']*)', '([^']*)'")]
+        public void WhenIAddASecondSkillRecordWithTheSameName(string name, string level)
+        {
+            skillsTabObj.CreateNewSkill(name, level);
         }
 
         [Then(@"Error message should pop up")]
         public void ThenErrorMessageShouldPopUp()
         {
-            Wait.waitIsVisible(driver, "XPath", "/html/body/div[contains(@class,\"ns-type-error\")]/div[text()=\"This skill is already exist in your skill list.\"]", 5);
-            var errorMessage = messagePopUpObj.FindErrorMessagePopUp(driver, "This skill is already exist in your skill list.");
+            messagePopUpObj.WaitForSkillErrorMessage();
+            var errorMessage = messagePopUpObj.FindErrorMessagePopUp("Duplicated data");
             Assert.True(errorMessage.Displayed, "Error Message doesn't pop up");
         }
 
-        [When(@"I add a new skill without choosing experience level")]
-        public void WhenIAddANewSkillWithoutChoosingExperienceLevel()
+        [When(@"I add a new skill ""([^""]*)"" without choosing experience level")]
+        public void WhenIAddANewSkillWithoutChoosingExperienceLevel(string skill)
         {
-            skillsTabObj.CreateNewSkill(driver, "Public Speaking", null);
+            skillsTabObj.CreateNewSkill(skill, null);
         }
 
         [Then(@"Enter skill level message should display")]
         public void ThenEnterSkillLevelMessageShouldDisplay()
         {
-            var errorMessage = messagePopUpObj.FindErrorMessagePopUp(driver, "Please enter skill and experience level");
+            var errorMessage = messagePopUpObj.FindErrorMessagePopUp("Please enter skill and experience level");
             Assert.That(errorMessage.Displayed, "Error Message doesn't pop up");
         }
 
-        [When(@"I add a new skill without entering name")]
-        public void WhenIAddANewSkillWithoutEnteringName()
+        [When(@"I add a new skill with ""([^""]*)"" level and without entering name")]
+        public void WhenIAddANewSkillWithLevelAndWithoutEnteringName(string level)
         {
-            skillsTabObj.CreateNewSkill(driver, null, "Intermediate");
+            skillsTabObj.CreateNewSkill(null, level);
         }
 
         [Then(@"Enter skill name message should display")]
         public void ThenEnterSkillNameMessageShouldDisplay()
         {
-            var errorMessage = messagePopUpObj.FindErrorMessagePopUp(driver, "Please enter skill and experience level");
+            var errorMessage = messagePopUpObj.FindErrorMessagePopUp("Please enter skill and experience level");
             Assert.That(errorMessage.Displayed, "Error Message doesn't pop up");
         }
-
 
         [When(@"I delete the skill record")]
         public void WhenIDeleteTheSkillRecord()
         {
-            skillsTabObj.DeleteSkill(driver);
+            skillsTabObj.DeleteSkill();
         }
 
         [Then(@"the skill record should be deleted successfully")]
         public void ThenTheSkillRecordShouldBeDeletedSuccessfully()
         {
-            Assert.That(ExpectedConditions.StalenessOf(skillsTabObj.SkillRecord)(driver), "The record is present");
+            skillsTabObj.WaitSkillRecordIsStale();
+            Assert.That(skillsTabObj.SkillRecord==null, "The record is present");
         }
 
         [When(@"I try to delete non-existent skill record")]
         public void WhenITryToDeleteNon_ExistentSkillRecord()
         {
-            skillsTabObj.FindDeleteButtonCount(driver);
+            skillsTabObj.FindDeleteButton();
         }
 
         [Then(@"no delete button is present")]
         public void ThenNoDeleteButtonIsPresent()
         {
-            var deleteButtonCount = skillsTabObj.FindDeleteButtonCount(driver);
-            Assert.That(deleteButtonCount == 0, "Delete Button is present");
+            Assert.That(skillsTabObj.PresentDeleteButton == null, "Delete Button is present");
         }
 
-        [When(@"I edit name of the skill record")]
-        public void WhenIEditNameOfTheSkillRecord()
+        [Given(@"I have a '([^']*)' created with '([^']*)'")]
+        public void GivenIHaveACreatedWith(string skill, string level)
         {
-            skillsTabObj.EditSkill(driver, "Public Speaking", null);
+            skillsTabObj.CreateNewSkill(skill, level);
         }
 
-        [Then(@"the skill record's name should be updated successfully")]
-        public void ThenTheSkillRecordsNameShouldBeUpdatedSuccessfully()
+        [When(@"I edit name of the skill record with '([^']*)'")]
+        public void WhenIEditNameOfTheSkillRecordWith(string skill)
         {
-            string editedSkillName = skillsTabObj.GetNewSkillName(driver);
-            Assert.That(editedSkillName == "Public Speaking", "Actual name and edited name don't match");
+            skillsTabObj.EditSkill(skill, null);
         }
 
-        [When(@"I change skill level of an existing record")]
-        public void WhenIChangeSkillLevelOfAnExistingRecord()
+        [Then(@"the skill name should be updated to '([^']*)'")]
+        public void ThenTheSkillNameShouldBeUpdatedTo(string skill)
         {
-            skillsTabObj.EditSkill(driver, null, "Intermediate");
+            skillsTabObj.WaitUpdateButtonStale();
+            Assert.That(skillsTabObj.NewSkillName.Text == skill , "Actual name and edited name don't match");
         }
 
-        [Then(@"the skill record's level should be updated successfully")]
-        public void ThenTheSkillRecordsLevelShouldBeUpdatedSuccessfully()
+        [Given(@"I have a skill record created with '([^']*)' and '([^']*)'")]
+        public void GivenIHaveASkillRecordCreatedWithAnd(string skill, string level)
         {
-            string editedSkillLevel = skillsTabObj.GetNewSkillLevel(driver);
-            Assert.That(editedSkillLevel == "Intermediate", "Actual level and edited level don't match");
+            skillsTabObj.CreateNewSkill(skill, level);
+        }
+
+        [When(@"I change skill level to '([^']*)'")]
+        public void WhenIChangeSkillLevelTo(string level)
+        {
+            skillsTabObj.EditSkill(null, level);
+        }
+
+        [Then(@"the skill level should change to '([^']*)'")]
+        public void ThenTheSkillLevelShouldChangeTo(string level)
+        {
+            skillsTabObj.WaitForSkillLevelToBeVisible();
+            Assert.That(skillsTabObj.NewSkillLevel.Text == level , "Actual level and edited level don't match");
         }
 
         [When(@"I try to edit non-existent skill record")]
         public void WhenITryToEditNon_ExistentSkillRecord()
         {
-           skillsTabObj.FindEditButtonCount(driver);
+            skillsTabObj.FindEditButton();
         }
 
         [Then(@"no edit button is present")]
         public void ThenNoEditButtonIsPresent()
         {
-            var deleteEditCount = skillsTabObj.FindEditButtonCount(driver);
-            Assert.That(deleteEditCount == 0, "Edit Button is present");
+            Assert.That(skillsTabObj.PresentEditButton == null, "Edit Button is present");
         }
 
         [Given(@"clicked on Add New button in Skills Tab")]
         public void GivenClickedOnAddNewButtonInSkillsTab()
         {
-            skillsTabObj.ClickAddNewButton(driver);
-         
+            skillsTabObj.ClickAddNewButton();
         }
 
         [When(@"I click on Cancel Addition button")]
         public void WhenIClickOnCancelAdditionButton()
         {
-            skillsTabObj.ClickCancelAdditionButton(driver);
+            skillsTabObj.ClickCancelAdditionButton();
         }
 
         [Then(@"the addition of the skill record should be cancelled")]
         public void ThenTheAdditionOfTheSkillRecordShouldBeCancelled()
         {
-            Assert.That(ExpectedConditions.StalenessOf(skillsTabObj.AddNewSkillSection)(driver), "The addition of the skill record wasn't canceled");
+            Assert.That(skillsTabObj.AddNewSkillSection ==null, "The addition of the skill record wasn't canceled");
         }
 
         [Given(@"clicked on Edit button in Skills Tab")]
         public void GivenClickedOnEditButtonInSkillsTab()
         {
-            skillsTabObj.ClickEditSkillButton(driver);
+            skillsTabObj.ClickEditSkillButton();
         }
 
         [When(@"I click on Cancel Edit button")]
         public void WhenIClickOnCancelEditButton()
         {
-            skillsTabObj.ClickCancelEditButton(driver);
+            skillsTabObj.ClickCancelEditButton();
         }
 
             [Then(@"the edit of the skill record should be cancelled")]
         public void ThenTheEditOfTheSkillRecordShouldBeCancelled()
         {
-            Assert.That(ExpectedConditions.StalenessOf(skillsTabObj.UpdateButton)(driver), "Update button is present");
+            Assert.That(skillsTabObj.UpdateSkillButton==null, "Update button is present");
         }
     }
 }
